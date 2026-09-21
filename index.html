@@ -73,6 +73,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', 
 
 .section-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); margin-bottom: 3px; }
 .section-head p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+.section-head.scroll-target { scroll-margin-top: 84px; }
 
 /* VIDEO */
 video { display: block; width: 100%; background: #000; }
@@ -168,7 +169,7 @@ video { display: block; width: 100%; background: #000; }
 <div class="top-bar">
   <span class="top-bar-title">Maya's Night Before</span>
   <div class="top-bar-right">
-    <span>Scenario 1 · Decision point 2 of 6</span>
+    <span>Exercise progress</span>
     <div class="dp-dots">
       <div class="dp-dot done"></div>
       <div class="dp-dot done"></div>
@@ -285,7 +286,7 @@ video { display: block; width: 100%; background: #000; }
       </div>
 
       <!-- SECTION 4 -->
-      <div class="section-head" style="margin-top:48px;">
+      <div class="section-head scroll-target" id="choose-response-head" style="margin-top:48px;">
         <h2>Choose How Javi Responds</h2>
         <p>Click an option header to expand it and watch the video. When you've decided, click <strong>Select This Response</strong> at the bottom of the option, then confirm with <strong>Choose This Response</strong>.</p>
       </div>
@@ -341,7 +342,7 @@ video { display: block; width: 100%; background: #000; }
       <!-- RESPONSE -->
       <div class="response" id="response">
 
-        <div class="section-head" style="margin-top:48px;">
+        <div class="section-head scroll-target" id="maya-response-head" style="margin-top:48px;">
           <h2>How Maya Responds</h2>
           <p>Here's how Maya reacts to what Javi said. Click to play.</p>
         </div>
@@ -521,7 +522,7 @@ function confirmChoice() {
   });
 
   setTimeout(function() {
-    document.getElementById('response').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('maya-response-head').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 200);
 }
 
@@ -559,7 +560,7 @@ function resetChoice() {
     }
   });
 
-  document.getElementById('options').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('choose-response-head').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function restartAll() {
