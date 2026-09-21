@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maya's Night Before – Learning Exercise</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F0EFEC;
+  --text: #111110;
+  --text-mid: #444;
+  --text-dim: #888;
+  --surface: #E4E3E0;
+  --surface-dark: #C8C7C4;
+  --accent: #2A4F85;
+  --accent-light: rgba(42,79,133,0.08);
+  --accent-border: rgba(42,79,133,0.3);
+  --border: rgba(17,17,16,0.1);
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.6; }
+
+/* TOP BAR */
+.top-bar { background: var(--text); color: var(--bg); padding: 14px 48px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.top-bar-title { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; }
+.top-bar-right { display: flex; gap: 24px; align-items: center; }
+.top-bar-right span { font-size: 11px; color: rgba(240,239,236,0.5); letter-spacing: 0.06em; }
+.dp-dots { display: flex; gap: 5px; }
+.dp-dot { width: 24px; height: 2px; border-radius: 1px; background: rgba(240,239,236,0.2); }
+.dp-dot.done { background: rgba(240,239,236,0.5); }
+.dp-dot.active { background: var(--bg); }
+.restart-btn { background: none; border: 1px solid rgba(240,239,236,0.25); color: rgba(240,239,236,0.6); font-family: inherit; font-size: 11px; letter-spacing: 0.06em; padding: 6px 14px; cursor: pointer; }
+.restart-btn:hover { color: var(--bg); border-color: rgba(240,239,236,0.6); }
+
+/* PAGE */
+.page { max-width: 700px; margin: 0 auto; padding: 0 40px 120px; }
+
+/* INTRO */
+.intro { padding: 48px 0 40px; border-bottom: 2px solid var(--text); margin-bottom: 0; }
+.sim-label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px; display: block; font-weight: 500; }
+.intro h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; line-height: 1.1; }
+.intro .scenario-tag { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 20px; display: block; }
+.intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 20px; }
+.intro-cell { background: var(--surface); padding: 18px 20px; }
+.intro-cell .cell-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-bottom: 8px; display: block; }
+.intro-cell p { font-family: 'Lora', serif; font-size: 14px; line-height: 1.65; color: var(--text-mid); }
+.role-box { background: var(--accent-light); border: 1px solid var(--accent-border); padding: 16px 20px; margin-top: 20px; }
+.role-box p { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+.role-box strong { color: var(--accent); font-weight: 600; }
+
+/* TIMELINE LAYOUT */
+.tl-wrap {
+  margin-top: 0;
+}
+
+
+
+.tl-right {
+  padding: 48px 0 0;
+}
+
+/* SECTION HEAD */
+.section-head {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.section-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); margin-bottom: 3px; }
+.section-head p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+/* VIDEO */
+video { display: block; width: 100%; background: #000; }
+
+/* TRANSCRIPT */
+.transcript-toggle { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; padding: 7px 0; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s; }
+.transcript-toggle:hover { color: var(--text); }
+.transcript-body { display: none; font-family: 'Lora', serif; font-size: 14px; line-height: 1.75; color: var(--text-mid); padding: 14px 18px; background: var(--surface); border-left: 2px solid var(--border); margin-top: 2px; }
+.transcript-body.open { display: block; }
+
+/* OPT BOXES – shared styles */
+.opt-box { border: 1px solid var(--border); overflow: hidden; background: var(--bg); margin-bottom: 10px; }
+.opt-box.is-selected { border: 2px solid var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px var(--accent-light); }
+.opt-box.is-dim { opacity: 0.5; }
+.opt-header { padding: 14px 18px 12px; }
+.d1-box .opt-header .opt-tag { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); font-weight: 700; }
+.opt-tag { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); font-weight: 600; }
+.opt-box.is-selected .opt-tag { color: var(--accent); font-weight: 700; }
+.opt-transcript { padding: 4px 16px 10px; }
+
+/* D1 accordion */
+.d1-box { cursor: pointer; }
+.d1-video-wrap { overflow: hidden; transition: max-height 0.4s ease; max-height: 0; }
+.d1-box.is-open .d1-video-wrap { max-height: 600px; }
+
+/* D2 accordion + select */
+.d2-box { cursor: default; }
+.d2-box.is-unselected { opacity: 0.55; }
+
+.d2-header { cursor: pointer; padding: 14px 18px 12px; user-select: none; }
+.d2-header:hover { background: rgba(17,17,16,0.03); }
+.d2-header .opt-tag { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); font-weight: 700; }
+
+.d2-select-bar {
+  display: none;
+  padding: 9px 18px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s, background 0.15s;
+}
+.d2-select-bar:hover { color: var(--accent); background: var(--accent-light); }
+.d2-box.is-open .d2-select-bar { display: block; }
+.d2-box.is-selected .d2-select-bar { color: var(--accent); background: var(--accent-light); cursor: default; }
+.d2-box.is-selected .d2-select-bar::before { content: '✓ '; }
+.d2-box.is-tried .opt-tag::after { content: ' · already tried'; color: var(--text-dim); font-weight: 400; }
+.d2-video-wrap { overflow: hidden; transition: max-height 0.4s ease; max-height: 0; }
+.d2-box.is-open .d2-video-wrap { max-height: 600px; }
+.d2-box.is-selected .d2-video-wrap { max-height: 600px; }
+
+
+
+/* YOUR TURN */
+.your-turn { background: var(--text); padding: 22px 28px; margin: 0; }
+.your-turn .yt-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(240,239,236,0.4); font-weight: 600; margin-bottom: 6px; display: block; }
+.your-turn p { font-size: 15px; color: var(--bg); font-family: 'Lora', serif; line-height: 1.55; }
+
+/* BUTTONS */
+.choose-btn { background: var(--text); color: var(--bg); border: none; padding: 14px 32px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; display: none; margin-top: 12px; }
+.choose-btn.show { display: inline-block; }
+.choose-btn:hover { opacity: 0.8; }
+.reset-btn { display: none; background: none; border: 1px solid var(--border); padding: 10px 24px; font-family: inherit; font-size: 13px; color: var(--text-dim); cursor: pointer; margin-top: 12px; margin-left: 10px; }
+.reset-btn:hover { border-color: var(--text); color: var(--text); }
+
+/* RESPONSE */
+.response { display: none; }
+.response.show { display: block; }
+
+/* ALEX */
+.alex-block { background: var(--surface); border-top: 2px solid var(--text); padding: 28px 32px; }
+
+/* FOOTER */
+.footer { margin-top: 72px; padding-top: 36px; border-top: 1px solid var(--border); text-align: center; }
+.footer p { font-size: 13px; color: var(--text-dim); line-height: 1.7; max-width: 480px; margin: 0 auto; }
+.footer strong { color: var(--text-mid); }
+
+@media (max-width: 600px) {
+  .top-bar { padding: 12px 20px; }
+  .page { padding: 0 16px 80px; }
+  .intro-grid { grid-template-columns: 1fr; }
+  .intro h1 { font-size: 26px; }
+  .tl-wrap { grid-template-columns: 16px 1fr; gap: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="top-bar-title">Maya's Night Before</span>
+  <div class="top-bar-right">
+    <span>Scenario 1 · Decision point 2 of 6</span>
+    <div class="dp-dots">
+      <div class="dp-dot done"></div>
+      <div class="dp-dot done"></div>
+      <div class="dp-dot active"></div>
+      <div class="dp-dot"></div>
+      <div class="dp-dot"></div>
+    </div>
+    <button class="restart-btn" onclick="restartAll()">↺ Restart</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- INTRO -->
+  <div class="intro">
+    <span class="sim-label">Learning Core Curriculum · Session Exercise</span>
+    <h1>Maya's Night Before</h1>
+    <span class="scenario-tag">Scenario 1 – One More Night</span>
+    <p style="font-family:'Lora',serif;font-size:16px;line-height:1.75;color:var(--text-mid);margin-bottom:24px;">This is a short extract from a real branching video simulation – built exactly the way we've been talking about today. You can watch the scenes, explore all the response options, and follow any path through to Alex's feedback. It's a way to see how the simulation works from the inside.</p>
+    <div class="intro-grid">
+      <div class="intro-cell">
+        <span class="cell-label">What this is about</span>
+        <p>Maya has just accepted a job in content and brand work. Tomorrow is her first day. Tonight her friend Javi has shown up – and finds her getting ready to go out.</p>
+      </div>
+      <div class="intro-cell">
+        <span class="cell-label">What this scenario teaches</span>
+        <p>Why the night before a first day matters. Why orientation is never just a formality. What the adjustment period of a new job actually involves.</p>
+      </div>
+    </div>
+    <div class="role-box">
+      <p><strong>You are playing Javi</strong> – Maya's oldest friend. He knows her well enough to know when she's kidding herself. You are joining at the second decision moment. Below is the context for what happened first.</p>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="tl-wrap">
+
+    <!-- LEFT COLUMN: dots and lines -->
+
+    <!-- RIGHT COLUMN: content -->
+    <div>
+
+      <!-- SECTION 1 -->
+      <div class="section-head">
+        <h2>The Opening Scene</h2>
+        <p>Maya is getting ready to go out – the night before her first day at a new job. Javi has just shown up. Click the video to watch. Transcript available below if you need it.</p>
+      </div>
+      <video class="sim-video" controls>
+        <source src="Maya _ Initial Video.mp4" type="video/mp4">
+      </video>
+      <button class="transcript-toggle" onclick="toggleT('t-s1',this)">↓ Show transcript</button>
+      <div class="transcript-body" id="t-s1">Maya: "Oh good – you can help me decide what to wear. I've got a green top and a blue one laid out on the bed and I cannot make up my mind. Anyway – I'm meeting Priya and Sam later, it's nothing big, just drinks. Before you say anything – I know. First day tomorrow. But it's literally just a couple of hours, I'll be home by eleven, and it's not like I need to be sharp for the first day, right? It's just orientation. They're not going to throw me in the deep end on day one. Oh – and that thing on the table, that's the information pack they sent. Haven't had a chance to look at it yet. So – green top or blue?"</div>
+
+      <!-- SECTION 2 -->
+      <div class="section-head" style="margin-top:48px;">
+        <h2>Javi's Three Possible Responses</h2>
+        <p>These are the three responses Javi could have given. The highlighted one was selected for this exercise – it's the path you'll continue from. Click an option to expand and watch.</p>
+      </div>
+
+      <div class="opt-box d1-box is-dim" onclick="toggleD1(this)">
+        <div class="opt-header"><span class="opt-tag">Option A – click to expand</span></div>
+        <div class="d1-video-wrap">
+          <video class="sim-video" controls onclick="event.stopPropagation()">
+            <source src="Javi _ D1_A.mp4" type="video/mp4">
+          </video>
+          <div class="opt-transcript" onclick="event.stopPropagation()">
+            <button class="transcript-toggle" onclick="toggleT('t-d1a',this)">↓ Show transcript</button>
+            <div class="transcript-body" id="t-d1a">Javi: "I mean – you could. But is 'I don't need to be sharp for orientation' really how you want to start this? You've been trying to get here for a long time. One more night out will always exist. This first day won't."</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="opt-box d1-box is-dim" onclick="toggleD1(this)">
+        <div class="opt-header"><span class="opt-tag">Option C – click to expand</span></div>
+        <div class="d1-video-wrap">
+          <video class="sim-video" controls onclick="event.stopPropagation()">
+            <source src="Javi _ D1_C.mp4" type="video/mp4">
+          </video>
+          <div class="opt-transcript" onclick="event.stopPropagation()">
+            <button class="transcript-toggle" onclick="toggleT('t-d1c',this)">↓ Show transcript</button>
+            <div class="transcript-body" id="t-d1c">Javi: "Honestly? Go. You've been grinding toward this for months – one night out isn't going to undo that. Just be sensible about it, eat something before you go, don't make it a late one. You'll be fine. Blue top, by the way."</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="opt-box d1-box is-selected" onclick="toggleD1(this)">
+        <div class="opt-header"><span class="opt-tag">Option B – selected for this exercise</span></div>
+        <div class="d1-video-wrap">
+          <video class="sim-video" controls onclick="event.stopPropagation()">
+            <source src="Javi _ D1_B.mp4" type="video/mp4">
+          </video>
+          <div class="opt-transcript" onclick="event.stopPropagation()">
+            <button class="transcript-toggle" onclick="toggleT('t-d1b',this)">↓ Show transcript</button>
+            <div class="transcript-body" id="t-d1b">Javi: "Maya. No. You're not going out before your first day! That's not even a conversation. Get changed, eat something, get some sleep. You can see Priya and Sam any time."</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3 -->
+      <div class="section-head" style="margin-top:48px;">
+        <h2>Maya's Reaction</h2>
+        <p>Maya isn't convinced. Watch how she pushes back. Click to play.</p>
+      </div>
+      <video class="sim-video" controls>
+        <source src="Maya _ S2B _ Path B.mp4" type="video/mp4">
+      </video>
+      <button class="transcript-toggle" onclick="toggleT('t-s2b',this)">↓ Show transcript</button>
+      <div class="transcript-body" id="t-s2b">Maya: "Javi, it's orientation. What are they going to do, quiz me? I just have to show up and smile for a few hours. I've done harder things hungover."</div>
+
+      <!-- YOUR TURN -->
+      <div class="your-turn" style="margin-top:48px;">
+        <span class="yt-label">Now it's your turn</span>
+        <p>Maya is pushing back – and she has a point, or at least she thinks she does. How Javi responds next will shape whether she walks into tomorrow ready or not.</p>
+      </div>
+
+      <!-- SECTION 4 -->
+      <div class="section-head" style="margin-top:48px;">
+        <h2>Choose How Javi Responds</h2>
+        <p>Click an option header to expand it and watch the video. When you've decided, click <strong>Select This Response</strong> at the bottom of the option, then confirm with <strong>Choose This Response</strong>.</p>
+      </div>
+
+      <div id="options">
+
+        <div class="opt-box d2-box" data-opt="1">
+          <div class="d2-header" onclick="toggleD2(this.parentElement)"><span class="opt-tag">Option A – click to expand</span></div>
+          <div class="d2-video-wrap">
+            <video class="sim-video" controls>
+              <source src="Javi _ D2B_1 _ Path B.mp4" type="video/mp4">
+            </video>
+            <div class="opt-transcript">
+              <button class="transcript-toggle" onclick="toggleT('t-d2b1',this)">↓ Show transcript</button>
+              <div class="transcript-body" id="t-d2b1">Javi: "Okay, forget hungover or not. What do you actually want tomorrow to feel like? Because you've been trying to get into this kind of work for a long time. So, what's the version of the first day you actually want?"</div>
+            </div>
+          </div>
+          <div class="d2-select-bar" onclick="selectOpt(this.closest('.d2-box'),'1')">Select This Response</div>
+        </div>
+
+        <div class="opt-box d2-box" data-opt="2">
+          <div class="d2-header" onclick="toggleD2(this.parentElement)"><span class="opt-tag">Option B – click to expand</span></div>
+          <div class="d2-video-wrap">
+            <video class="sim-video" controls>
+              <source src="Javi _ D2B_2 _ Path B.mp4" type="video/mp4">
+            </video>
+            <div class="opt-transcript">
+              <button class="transcript-toggle" onclick="toggleT('t-d2b2',this)">↓ Show transcript</button>
+              <div class="transcript-body" id="t-d2b2">Javi: "Look – I'm not your dad. But 'I've done harder things hungover' isn't exactly setting the bar high, is it? This is a job you actually want. First impressions matter – not just to them, but to you. How you show up on day one sets a certain tone, Maya."</div>
+            </div>
+          </div>
+          <div class="d2-select-bar" onclick="selectOpt(this.closest('.d2-box'),'2')">Select This Response</div>
+        </div>
+
+        <div class="opt-box d2-box" data-opt="3">
+          <div class="d2-header" onclick="toggleD2(this.parentElement)"><span class="opt-tag">Option C – click to expand</span></div>
+          <div class="d2-video-wrap">
+            <video class="sim-video" controls>
+              <source src="Javi _ D2B_3 _ Path B.mp4" type="video/mp4">
+            </video>
+            <div class="opt-transcript">
+              <button class="transcript-toggle" onclick="toggleT('t-d2b3',this)">↓ Show transcript</button>
+              <div class="transcript-body" id="t-d2b3">Javi: "I don't care about orientation or quizzes. You're not going out. That's it. I'll stay here and make sure you don't. We can order food, watch something – but you're not walking out that door tonight."</div>
+            </div>
+          </div>
+          <div class="d2-select-bar" onclick="selectOpt(this.closest('.d2-box'),'3')">Select This Response</div>
+        </div>
+
+      </div>
+
+      <button class="choose-btn" id="choose-btn" onclick="confirmChoice()">Choose This Response</button>
+
+      <!-- RESPONSE -->
+      <div class="response" id="response">
+
+        <div class="section-head" style="margin-top:48px;">
+          <h2>How Maya Responds</h2>
+          <p>Here's how Maya reacts to what Javi said. Click to play.</p>
+        </div>
+        <video class="sim-video" id="s3-video" controls>
+          <source id="s3-src" src="" type="video/mp4">
+        </video>
+        <button class="transcript-toggle" id="s3-tr-btn" onclick="toggleT('t-s3',this)">↓ Show transcript</button>
+        <div class="transcript-body" id="t-s3"></div>
+
+        <div class="section-head" style="margin-top:48px;">
+          <h2>Alex – What Just Happened</h2>
+          <p>Alex reflects on the path you just took – including parts of the simulation not shown in this exercise. Click to play.</p>
+        </div>
+        <div class="alex-block">
+          <video class="sim-video" id="alex-video" controls>
+            <source id="alex-src" src="" type="video/mp4">
+          </video>
+          <button class="transcript-toggle" id="alex-tr-btn" onclick="toggleT('t-alex',this)">↓ Show transcript</button>
+          <div class="transcript-body" id="t-alex"></div>
+        </div>
+
+        <div style="margin-top:24px; text-align:center;">
+<button class="reset-btn" id="reset-btn" onclick="resetChoice()">↩ Try Another Response</button>
+        </div>
+
+      </div>
+
+    </div><!-- end tl-right -->
+  </div><!-- end tl-wrap -->
+
+  <div class="footer" id="final-footer" style="display:none;">
+    <p style="font-family:'Lora',serif;font-size:17px;line-height:1.75;color:var(--text);margin-bottom:16px;">That's a small slice of what the full simulation looks like.</p>
+    <p style="font-family:'Lora',serif;font-size:15px;line-height:1.75;color:var(--text-mid);margin-bottom:16px;">In the complete version, there are three scenarios and six decision points. Maya's story runs all the way through – and every path, however different, lands on the same learning objectives. What you just tried is one moment from one simulation.</p>
+    <p style="font-family:'Lora',serif;font-size:15px;line-height:1.75;color:var(--text-mid);margin-bottom:16px;">In the real simulation, a learner picks one response and follows that path to the end. They never see the others. That's why every path is designed to teach the same thing – just through a different conversation.</p>
+    <p style="font-family:'Lora',serif;font-size:14px;line-height:1.75;color:var(--text-dim);font-style:italic;">If you want to go through it again, refresh the page.</p>
+  </div>
+
+</div>
+
+<script>
+let chosen = null;
+let pending = null;
+let tried = [];
+let alexWatched = [];
+
+const data = {
+  '1': {
+    s3video: 'Maya _ S3B1 _ Path B.mp4',
+    s3tr: 'Maya: "Honestly? I want to walk in feeling like I\'ve got this. Not like I\'m still catching up from the night before. So okay – pizza in, early night. Can you stay for a bit?"',
+    alexvideo: 'Alex Feedback _ S4B1 _ Path B.mp4',
+    alextr: 'Alex: "This was the strongest path in this branch. Javi didn\'t tell Maya what to do – he asked her what she actually wanted, and she answered it herself. That\'s important, because Maya won\'t always have someone there to nudge her. She found the answer on her own: she wants to walk in feeling ready, not like she\'s already behind. That\'s a good instinct. Orientation is where you meet the people, learn how the place runs, and pick up the things that aren\'t written in any handbook – which team actually makes decisions, what the unwritten rules are, who to go to when something goes wrong. You only get one first day. Showing up clear makes a difference. The information pack is still on the table – worth a look before the pizza arrives."'
+  },
+  '2': {
+    s3video: 'Maya _ S3B2 _ Path B.mp4',
+    s3tr: 'Maya: "That\'s… actually a fair point. Okay. Maybe I\'m using orientation as an excuse because I\'m nervous and I\'d rather not sit here thinking about it."',
+    alexvideo: 'Alex Feedback _ S4B2 _ Path B.mp4',
+    alextr: 'Alex: "This path got somewhere useful. Maya admitted the real reason she wanted to go out – not because she thought it would be fine, but because sitting with pre-first-day nerves is uncomfortable and Priya and Sam are a good distraction. Most people have been there. The question is what actually helps more. Going out postpones the nerves until the morning, when there\'s no time to do anything about them. What actually helps is getting organized – knowing where she\'s going, what to bring, what orientation involves. That\'s what the information pack is for. Companies send those out so you\'re not walking in cold on day one. Maya hasn\'t opened hers yet. That\'s probably a better use of the evening than convincing herself two hours means two hours."'
+  },
+  '3': {
+    s3video: 'Maya _ S3B3 _ Path B.mp4',
+    s3tr: 'Maya: "Fine. Staying in. But I\'m ordering pizza and I\'m blaming you if I\'m bored."',
+    alexvideo: 'Alex Feedback _ S4B3 _ Path B.mp4',
+    alextr: 'Alex: "Maya stayed in – but because Javi insisted, not because she understood why. That distinction matters. The next time she\'s in a similar situation – before a big presentation, before a difficult meeting, before any moment that needs her at her best – Javi won\'t be there to override her. She needs the reasoning, not just the outcome. The reasoning is straightforward: orientation is where you learn how the place actually works. Who does what, what the expectations are, what the first weeks involve. You can\'t get that from the job description. Walking in tired means you\'re taking in about half of it. The information pack on the table would help with the rest – it\'s what companies send so you arrive with some context. It\'s still unopened."'
+  }
+};
+
+// One video at a time
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('video').forEach(function(v) {
+    v.addEventListener('play', function() {
+      document.querySelectorAll('video').forEach(function(o) { if (o !== v) o.pause(); });
+    });
+  });
+});
+
+function toggleT(id, btn) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var open = el.classList.toggle('open');
+  btn.textContent = open ? '↑ Hide transcript' : '↓ Show transcript';
+}
+
+function toggleD1(el) {
+  el.classList.toggle('is-open');
+  var tag = el.querySelector('.opt-header .opt-tag');
+  if (tag) {
+    if (!tag.dataset.base) tag.dataset.base = tag.textContent.replace(/ – click to expand| – click to collapse/i, '').trim();
+    tag.textContent = el.classList.contains('is-open') ? tag.dataset.base + ' – click to collapse' : tag.dataset.base + ' – click to expand';
+  }
+}
+
+function toggleD2(el) {
+  if (chosen) return;
+  el.classList.toggle('is-open');
+  var tag = el.querySelector('.d2-header .opt-tag');
+  if (tag) {
+    if (!tag.dataset.base) tag.dataset.base = tag.textContent.replace(/ – click to expand| – click to collapse/i, '').trim();
+    tag.textContent = el.classList.contains('is-open') ? tag.dataset.base + ' – click to collapse' : tag.dataset.base + ' – click to expand';
+  }
+}
+
+function selectOpt(el, opt) {
+  if (chosen) return;
+  // Deselect all
+  document.querySelectorAll('#options .d2-box').forEach(function(b) {
+    b.classList.remove('is-selected', 'is-unselected');
+  });
+  // Select this one
+  el.classList.add('is-selected');
+  document.querySelectorAll('#options .d2-box').forEach(function(b) {
+    if (b !== el) b.classList.add('is-unselected');
+  });
+  pending = opt;
+  document.getElementById('choose-btn').classList.add('show');
+}
+
+function confirmChoice() {
+  if (!pending) return;
+  chosen = pending;
+  var d = data[chosen];
+
+  document.getElementById('s3-src').src = d.s3video;
+  document.getElementById('s3-video').load();
+  document.getElementById('alex-src').src = d.alexvideo;
+  var alexVid = document.getElementById('alex-video');
+  alexVid.load();
+  alexVid.addEventListener('ended', function() {
+    if (alexWatched.indexOf(chosen) === -1) alexWatched.push(chosen);
+    if (alexWatched.length >= 3) {
+      document.getElementById('final-footer').style.display = 'block';
+      document.getElementById('final-footer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, { once: true });
+
+  document.getElementById('t-s3').textContent = d.s3tr;
+  document.getElementById('t-s3').classList.remove('open');
+  document.getElementById('s3-tr-btn').textContent = '↓ Show transcript';
+  document.getElementById('t-alex').textContent = d.alextr;
+  document.getElementById('t-alex').classList.remove('open');
+  document.getElementById('alex-tr-btn').textContent = '↓ Show transcript';
+
+  document.getElementById('response').classList.add('show');
+  document.getElementById('choose-btn').classList.remove('show');
+
+  var resetBtn = document.getElementById('reset-btn');
+  resetBtn.style.display = 'inline-block';
+
+  // If this is the 3rd path, change button to "Click to Finish"
+  if (tried.length >= 2) {
+    resetBtn.textContent = 'Click to Finish';
+    resetBtn.style.background = '#111110';
+    resetBtn.style.color = '#F0EFEC';
+    resetBtn.style.borderColor = '#111110';
+    resetBtn.style.fontWeight = '700';
+    resetBtn.onclick = function() {
+      document.getElementById('final-footer').style.display = 'block';
+      document.getElementById('final-footer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.style.display = 'none';
+    };
+  } else {
+    resetBtn.textContent = '↩ Try Another Response';
+    resetBtn.style.background = 'none';
+    resetBtn.style.color = 'var(--text-dim)';
+    resetBtn.style.borderColor = 'var(--border)';
+    resetBtn.onclick = function() { resetChoice(); };
+  }
+
+  // Show remaining timeline dots
+
+  // Lock options
+  document.querySelectorAll('#options .d2-box').forEach(function(b) {
+    b.style.pointerEvents = 'none';
+    var h = b.querySelector('.d2-header');
+    var s = b.querySelector('.d2-select-bar');
+    if (h) h.onclick = null;
+    if (s) s.onclick = null;
+  });
+
+  setTimeout(function() {
+    document.getElementById('response').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 200);
+}
+
+function resetChoice() {
+  if (chosen && tried.indexOf(chosen) === -1) tried.push(chosen);
+  chosen = null;
+  pending = null;
+
+  document.getElementById('response').classList.remove('show');
+  document.getElementById('choose-btn').classList.remove('show');
+  var resetBtn = document.getElementById('reset-btn');
+  resetBtn.style.display = 'none';
+  resetBtn.textContent = '↩ Try Another Response';
+  resetBtn.style.background = 'none';
+  resetBtn.style.color = '#888';
+  resetBtn.style.borderColor = 'rgba(17,17,16,0.1)';
+  resetBtn.style.fontWeight = 'normal';
+  resetBtn.onclick = function() { resetChoice(); };
+  document.getElementById('final-footer').style.display = 'none';
+  document.getElementById('s3-video').pause();
+  document.getElementById('alex-video').pause();
+
+  // Hide extra timeline dots
+
+  document.querySelectorAll('#options .d2-box').forEach(function(b) {
+    b.classList.remove('is-selected', 'is-unselected', 'is-open');
+    b.style.pointerEvents = 'auto';
+    var opt = b.getAttribute('data-opt');
+    var header = b.querySelector('.d2-header');
+    if (header) header.onclick = function() { toggleD2(this.parentElement); };
+    var bar = b.querySelector('.d2-select-bar');
+    if (bar) bar.onclick = function() { selectOpt(this.closest('.d2-box'), this.closest('.d2-box').getAttribute('data-opt')); };
+    if (tried.indexOf(opt) !== -1) {
+      b.classList.add('is-tried');
+    }
+  });
+
+  document.getElementById('options').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function restartAll() {
+  chosen = null; pending = null; tried = []; alexWatched = [];
+
+  document.getElementById('response').classList.remove('show');
+  document.getElementById('choose-btn').classList.remove('show');
+  var resetBtn = document.getElementById('reset-btn');
+  resetBtn.style.display = 'none';
+  resetBtn.textContent = '↩ Try Another Response';
+  resetBtn.style.background = 'none';
+  resetBtn.style.color = '#888';
+  resetBtn.style.borderColor = 'rgba(17,17,16,0.1)';
+  resetBtn.style.fontWeight = 'normal';
+  resetBtn.onclick = function() { resetChoice(); };
+  document.getElementById('final-footer').style.display = 'none';
+
+  // Pause all videos
+  document.querySelectorAll('video').forEach(function(v) { v.pause(); });
+
+  // Reset D2 options
+  document.querySelectorAll('#options .d2-box').forEach(function(b) {
+    b.classList.remove('is-selected','is-unselected','is-open','is-tried');
+    b.style.pointerEvents = 'auto';
+    var header = b.querySelector('.d2-header');
+    if (header) {
+      header.onclick = function() { toggleD2(this.parentElement); };
+      var tag = header.querySelector('.opt-tag');
+      if (tag) tag.textContent = tag.textContent.replace(/ – click to collapse/i, ' – click to expand');
+    }
+  });
+
+  // Reset D1 options
+  document.querySelectorAll('.d1-box').forEach(function(b) {
+    b.classList.remove('is-open');
+    var tag = b.querySelector('.opt-tag');
+    if (tag) tag.textContent = tag.textContent.replace(/ – click to collapse/i, ' – click to expand');
+  });
+
+  // Scroll to top
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
+// Progress dots update on scroll
+var sections = [
+  document.querySelector('.intro'),
+  document.querySelector('#options'),
+  document.getElementById('response')
+];
+
+var dots = document.querySelectorAll('.dp-dot');
+
+function updateDots(activeIndex) {
+  dots.forEach(function(d, i) {
+    if (i < activeIndex) d.className = 'dp-dot done';
+    else if (i === activeIndex) d.className = 'dp-dot active';
+    else d.className = 'dp-dot';
+  });
+}
+
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (!entry.isIntersecting) return;
+    var el = entry.target;
+    if (el === document.querySelector('.intro')) updateDots(0);
+    else if (el.id === 'options') updateDots(1);
+    else if (el.id === 'response' && el.classList.contains('show')) updateDots(2);
+  });
+}, { threshold: 0.2 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  observer.observe(document.querySelector('.intro'));
+  observer.observe(document.getElementById('options'));
+  observer.observe(document.getElementById('response'));
+});
+
+// Scroll-based progress – 5 dots, 5 sections
+// dot 0 = Opening Scene (S1)
+// dot 1 = Javi's responses (D1)
+// dot 2 = Maya's reaction + Your turn (S2B)
+// dot 3 = Choose (D2 options)
+// dot 4 = Reaction + Alex (response)
+
+document.addEventListener('DOMContentLoaded', function() {
+  var sectionEls = [
+    document.querySelectorAll('.section-head')[0],  // Opening Scene
+    document.querySelectorAll('.section-head')[1],  // Javi's responses
+    document.querySelectorAll('.section-head')[2],  // Maya's reaction
+    document.getElementById('options'),              // Choose
+    document.getElementById('response')             // Reaction + Alex
+  ];
+
+  function updateProgress() {
+    var scrollY = window.scrollY + window.innerHeight * 0.45;
+    var active = 0;
+    sectionEls.forEach(function(el, i) {
+      if (!el) return;
+      if (el.id === 'response' && !el.classList.contains('show')) return;
+      var top = el.getBoundingClientRect().top + window.scrollY;
+      if (top < scrollY) active = i;
+    });
+    document.querySelectorAll('.dp-dot').forEach(function(d, i) {
+      if (i < active) d.className = 'dp-dot done';
+      else if (i === active) d.className = 'dp-dot active';
+      else d.className = 'dp-dot';
+    });
+  }
+
+  window.addEventListener('scroll', updateProgress);
+  updateProgress();
+});
+</script>
+</body>
+</html>
